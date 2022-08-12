@@ -1,0 +1,405 @@
+---
+title: "Untitled"
+author: "Sandra LOUNI & Ebin TOMY"
+date: "5/18/2021"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include = FALSE, warning = FALSE, message = FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+    include = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    cache = TRUE)
+```
+
+```{r, include=FALSE, echo=FALSE, warning=FALSE}
+library(tidyverse)
+library(stringr)
+library(skimr)
+library(readr)
+library(jtools)
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(lubridate)
+library(ggpubr)
+library(tinytex)
+library(readxl)
+library(ggdag)
+library(dagitty)
+library(corrplot)
+library(ivreg)
+library(devtools)
+library(fixest)
+options(scipen=999)
+```
+
+## I. Introduction 
+- Research question is clearly laid out (0.5 point)
+- Research question is well motivated (0.5 point)
+
+The world is still bearded with a global pandemic that is making the work of policymakers very arduous. Limited bystanders imagined the depth and breadth of the breaking point that the world is facing moment, with COVID-19 affecting not only health, but also employment, education, trade, movements and food security – there's hardly any aspect of our social and lucrative system that has not been fettered or halted by the present crunch. In reexamination, the 2007-2008 great financial crisis now seems like a small-scale practice of these dislocations to our socioeconomic system, with around one-quarter of total GDP directly impacted by the present crisis. Governments around the world have mobilized to implement measures to manage the situation and the spread of COVID-19. 
+This project will aim at investigating the causal link between government policies and the propagation of the COVID-19 pandemic. We will focus our attention on different measures whether they are  more traditional and incentive measures that go through traditional channels such as public spending but also measures specific to epidemics such as containment measures in order to see the effectiveness and explore indeed the causal relationship between these policies and the situation of the global pandemic from the start of the pandemic in January 2020 to now.
+
+## ##
+## II. Literature review
+- Discusses important papers on the topic (0.5 point)
+- Explains clearly how that research informs your own work (1 point)
+
+The rapid evolution of COVID-19, and the need for academic study on policy implications, have caused a flurry of papers to be published on the link between government policies and the magnitude of COVID propagation. Although this area of research is evolving as we speak, viewing research uptill now can help discern the central questions asked by academics. While there have been many theoretical contributions and quantitative study in specific countries like China, there is a lack of studies across geographical regions.
+Researchers from the IMF sought to remedy this by conducting a study on the effect of containment measures on COVID-19 cases and deaths across 129 countries around the globe (Deb et al. 2020). They found that containment measures implemented as early as possible, especially a reduction in internal and external mobility, has been very effective. They also observed heterogeneity based on country and social characteristics. Countries with lower average temperature and a larger share of elderly in their population responded more favourably to containment measures. In terms of the most effective containment measure, the stay-at-home order seemed to be the leader. Fundamentally, this study exonerates the “Great Lockdown” put in place by many countries, as a measure that was highly effective despite its large economic cost. These types of analyses, evaluating the effectiveness of containment measures, are replicated by other authors in specific countries to determine the viabilities of national economic exit strategies (Hartl et al. 2020).
+The other major area of research on COVID-19 response measures is on airborne transmission and the wearing of masks. The requirement of wearing masks is controversial and has become politicized in many countries, therefore making it very important that evidence backing the effectiveness of masks on curbing the spread of the pandemic be concretely available. As such, German researchers have conducted studies using the synthetic control method (Abadie and Gardeazabal 2003, Abadie et al. 2010, Abadie 2020), to estimate a counterfactual that shows the case in which mask-wearing was not compulsory in German cities (Mitze et al. 2020). They found that mask-wearing caused an estimated decrease in growth of COVID-19 cases of about 40% in Germany, the effect on the over-60 age group being the most striking. Interestingly, the authors pointed to variation in effectiveness across German cities to be because of unobserved factors such as regional culture and a  sort of Hawthorne effect where measures indicated the seriousness of the matter. Other researchers have used epidemiological data from countries most successful in handling the pandemic (Taiwan, Japan, Hong Kong, Singapore, and South Korea) to prove the effectiveness of universal masking (Prather et al. 2020). According to that study, the availability and widespread adoption of masks were a key factor in these countries' success in preventing the airborne transmission of viruses. 
+Given this body of research, we chose to focus on the causal link of government implemented containment measures and mask-wearing on the propagation of the COVID-19 virus. These two measures are among the most effective in preventing the spread of the virus, therefore exploring the different factors that impact their policy implementation is paramount to this discussion. 
+
+
+## ##
+## III. Data
+
+## A. Description of the Data
+
+ •	For our project we have gathered different datasets from different centers. First and foremost, the databaset that we use is coming from the "National and Subnational Estimates of the Covid 19 Reproduction Number (R) for the United States of America Based on Test Results" conducted by the Harvard Dataverse. (Abbott, Sam; Bennett, Christopher; Hickson, Joe; Allen, Jamie; Sherratt, Katharine; Funk, Sebastian, 2020, "National and Subnational Estimates of the Covid 19 Reproduction Number (R) for the United States of America Based on Test Results", https://doi.org/10.7910/DVN/BZ7FPH, Harvard Dataverse, V215, UNF:6:MJtsdbOpymWzUepy7iKA0A== [fileUNF])
+
+Among the different datasets that this database is composed we chose to focus on the subnational level by selecting a summary table that contains the latest up to date (may 2021) reproduction number of the COVID-19 among the 50 states of the USA:
+
+```{r, echo = TRUE, eval = TRUE}
+reproduction_number <- read_csv("C:/Users/Ebin/OneDrive/Documents/Courses 2020-2021/AdvancedEconometrics/Final/Sandra/summary_data.csv")
+```
+
+This dataset gives us a very detailed analysis on the COVID-19 reproduction number, giving us not only the estimate, but also the median, the mean, the standard error, the bottom and upper quintile and decile and probability control. For the sake of this paper will only use the estimate. 
+
+ •	The second dataset that we used comes from the Delphi Pandemic Survey via Facebook. The signal that we chose is "People wearing mask" and the geographical level is still the 50 states of the USA. Similarly we chose the latest up to date date of the 10th of may. Because the survey is conducted everyday, the dataset is updated daily and on average, 10000 Facebook's users are asked COVID-related questions. One of them being if they wear a mask when they are in public. They estimated the percentage of people who say they wear a mask most or all of the time when they are out. (Data from Delphi COVIDcast, delphi.cmu.edu/covidcast/)
+
+```{r, echo = TRUE, eval = TRUE}
+facial_covering <- read_csv("C:/Users/Ebin/OneDrive/Documents/Courses 2020-2021/AdvancedEconometrics/Final/Sandra/covidcast-fb-survey-smoothed_wearing_mask_7d-2021-05-10-to-2021-05-10.csv")
+head(facial_covering)
+```
+ •	The third dataset that we used comes from the website World Population Review (https://worldpopulationreview.com/state-rankings/state-densities). This dataset gives us information about the population density of the United States among the states in 2021. Population density is the number of human inhabitants per mi² or km². This dataset informs us about the population density, the population and also land area per state. 
+
+```{r, echo = TRUE, eval = TRUE}
+population_density <- read_csv("C:/Users/Ebin/OneDrive/Documents/Courses 2020-2021/AdvancedEconometrics/Final/Sandra/csvData.csv")
+head(population_density)
+```
+ •	The fourth dataset that we used comes from The Cook Political Report which is an independent, non-partisan newsletter that analyzes elections, campaigns and political trends in the USA. This data set summarizes the main takeaways from the 2020 US Presidential Election for each state. We will use this dataset to express the average the political orientation of a given state. This data shows us if the votes have been certified, the number and percentage among each states of votes for the Democrat Party, Republican Party and others, the percentage difference between the Democrat and Republican Party votes in each states and the comparison to 2016.
+
+```{r, echo = TRUE, eval = TRUE}
+political_orientation <- read_csv("C:/Users/Ebin/OneDrive/Documents/Courses 2020-2021/AdvancedEconometrics/Final/Sandra/PopularVote.csv")
+head(political_orientation)
+```
+
+ •	The fifth dataset that we used comes from the Oxford COVID-19 Government Response Tracker (OxCGRT). This dataset is a collection of information on several different common policy responses that governments have taken to respond to the pandemic of 186 countries. Individual policy measures on containment and closure policies (C1-C8), economic policies (E1-E8) and   health system policies (H1-H7) are used. To make sense of the data, four indices aggregates the data into a single number based on their respective categories: overall government response index (all indicators); containment and health index (all C and H indicators); stringency index (all C indicators, plus H1 which records public information campaigns) and economic support index (all E indicators). For our study we will be looking at the stringency index.
+
+
+```{r,echo = TRUE, eval=TRUE}
+urlfile="https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv"
+govData<-read_csv(url(urlfile))
+head(govData)
+```
+
+## B.Limitations of the data 
+
+We can stress some limits for each dataset that we are using:
+
+For the first one on the COVID-19 Reproduction number, this method of expressing the propagation of the virus is less and less used and is preferred over other measures such as the hospitalization rate for exemple, because the method for calculating it differed enormously between the different studies, thus biasing the real situation in one country rather than another. 
+
+For the second one, being a survey,it is impossible to verify the veracity of the facts put forward by Facebook users, nor to what extent the subjectivity of wearing a mask "all the time or a lot" differs according to individuals
+
+For the third one, we don't have any further and background information on how the data has been collected and through which method, the population density has been calculated.
+
+For the fourth one, in itself, this dataset does not have any apparent limitations, but the way we use it in our paper does raise objections. To capture a point of view, whether it is political or not, at a certain time, does not reflect and express the possible changes through time. In our case, the political views of citizens who have been granted the right to vote and have used this right does not account for the political views of the entire population in a state or at the national level. 
+
+Finally for the fifth dataset, there are a few limitations due to the nature of the data. First, reductions or dips in the calculated stringency index can be caused by incomplete or missing data. Second, not all countries are up to data within the week. Third, some indicators maybe missing in some days due to a lack of information for the data collectors. And finally, some indicators maybe changed retroactively as the data is reviewed by OxCGRT.
+
+## C. Cleaning and tydying the data
+
+```{r, echo = TRUE, eval = TRUE}
+#Drop the unnecessary variables in each dataset
+
+facial_covering = facial_covering %>% select("geo_value", "value")
+
+population_density = population_density %>% select("State","Density")
+
+political_orientation = political_orientation %>% select("state","dem_percent","rep_percent")
+
+reproduction_number = reproduction_number %>% select("region", "estimate")
+```
+
+```{r, echo = TRUE, eval = TRUE}
+#Rename some variables of each dataset
+
+facial_covering = facial_covering %>% rename( "state" = geo_value, "facial_covering" = value)
+
+population_density = population_density %>% rename("state" = State,"population_density"= Density)
+
+reproduction_number = reproduction_number %>% select("state" = region, "covid_reproduction_number" = estimate)
+```
+
+```{r, echo = TRUE, eval = TRUE}
+# Merge all the datasets together
+
+policy = full_join(facial_covering, population_density, by = "state")
+policy = full_join(policy, reproduction_number, by = "state")
+policy = full_join(policy, political_orientation, by = "state")
+```
+
+```{r, echo = TRUE, eval = TRUE}
+#Convert variables to the correct format
+policy$covid_reproduction_number <- as.numeric(policy$covid_reproduction_number)
+```
+
+We now have the dataset 'policy' ready for use 
+```{r, echo = TRUE, eval = TRUE}
+head(policy)
+```
+We can then see how our dataset is structured.
+```{r, echo = TRUE, eval = TRUE}
+str(policy)
+```
+
+For the OxCGRT dataset, we must subset the data to specify which indicators and indexes are of interest. Since we wish to examine the effect of government containment measures on COVID outcomes, we focus on the Confirmed Deaths and Stringency Index indicators. We choose to look at the first day of every month in 2020 since COVID measures at least vary on a monthly on a national basis.   
+
+```{r,echo = TRUE, eval=TRUE}
+#Subset the data to include only the first day of every month in 2020 and look at only National level data 
+govDataMonthly <-  subset(govData, (
+    Date %in% c(20200101, 20200201, 20200301, 20200401, 20200501, 20200601, 
+                20200701, 20200801, 20200901, 20201001, 20201101, 20201201) &
+    Jurisdiction == "NAT_TOTAL"))
+
+#Drop the unnecessary variables in the dataset
+govDataMonthly = govDataMonthly %>% select("CountryName", "Date", "ConfirmedDeaths", "StringencyIndex")
+
+```
+
+## III. Methodology and results
+- Describes and motivates the econometric technique(s) used (1 point)
+- Lay out the regression model to be estimated (0.5 point)
+- Motivates inclusion of control variables (1 point)
+- Reports multiple regression results (1 point)
+- Interprets regression results: statistical interpretation (3 points)
+- Interprets regression results: economic interpretation (2 points)
+- Discusses whether causality is achieved (2,5 points)
+- Answers research question (1 point)
+
+First, this is the model we would like to estimate :
+
+$$
+y=a+bx+cd+e
+$$
+$$y$$ is the explained variable
+$$a$$,$$b$$ and $$c$$ are the coefficients we want to estimate
+$$x$$ is the control variable 
+$$d$$ is the treatment variable
+
+$$
+\text{Covid-19 Reproduction Number (R)} = \beta_0 + \beta_1\text{Population density} + \beta_2\text{Facial covering} +\epsilon \\
+$$
+We are interested in the impact of our treatment $$d$$ on $$y$$, does systematically wearing a mask have an impact on the number of COVID-19 cases?
+
+
+
+For our Fixed Effects Estimation model, given our panel data, we would like to estimate for period T:
+
+$$
+y_{it}=\beta_1x_{it} + c_i + u_{}
+$$
+where $c_i$ is the cross--country fixed effect or unobserved heterogeneity, that is fixed over time but still correlates with $x_{it}$. 
+
+$y_{it}$ is the Confirmed Deaths number and the $x_{it}$ being the stringency index. The $\beta_1$ coefficient will reveal the impact of the Stringency government containment policies on COVID deaths. 
+
+We must perform a Within Transformation since the period $T > 2$. Here, we control for group identity and look only at time variation. 
+
+Let x of i be the average over time of i's x values
+$$1/T\sum_{t=1}^T x_{it}$$
+We would then automate the within transformation process using the fixest package!
+
+
+
+### A.Ordinary least squares (OLS) approach
+
+We use Ordinary Least Squares (OLS) to estimate the coefficients:
+
+```{r, echo = TRUE, eval = TRUE}
+ols<-lm(covid_reproduction_number ~ population_density + facial_covering, data = policy)
+summary(ols)
+```
+
+The estimated coefficient of $$d$$, our treatment variable is -0.21 instead of -1 or 1. Increasing the systematic wear of facial covering in a given state by 1% over the total population of that state is associated, on average, with a decrease of 0.21 in the COVID-19 reproduction number of the said state. This estimate is problematic because it can be argued that facial covering is endogenous (and hence also population density). 
+
+## B.Two-Stage Least Squares (2SLS) approach
+
+##Political orientation: our instrumental variable
+
+We will now us Two Stage Least Squares (2SLS) to estimate this relationship. 
+We therefore use political orientation across US states as an exogenous instrument for facial covering. Additionally, we could of used for example urban growth as the natural exogenous instrument for population density, while the remaining explanatory variables that we did not include in our model could have been considered exogenous and would have been used as instruments for themselves. Although it’s a useful strategy to select an effective instrument or instruments for each endogenous explanatory variable, in 2SLS regression all of the instrumental variables are used to estimate all of the regression coefficients in the model.
+
+Therefore, we use $$z$$ as the instrumental variable for $$d$$ our treatment variable.
+
+To be a valid instrumental variable, $$z$$ must meet three conditions : 
+
+  1. The Relevance assumption. In our case, political orientation has a causal effect on facial covering
+  2. The Exclusion restriction. In our case, political orientation only has a causal effect on the Covid-19 reproduction number through facial covering 
+  3. The Exogeneity assumption. The instrument is randomly assigned to units
+  
+```{r, echo = TRUE, eval = TRUE}
+mrdag <- dagitty('dag {  d <- u -> y
+                        z -> d -> y
+                        x -> y
+  d [e, pos="1,0"]
+  u [pos="1,2"]
+  z [pos="0,0"]
+  x [pos="2,2"]
+  y [o, pos="2,1"]}')   
+ggmrdag <- tidy_dagitty(mrdag)
+
+mrdag <- mrdag %>% 
+  dag_label(
+    labels = c(
+      "d" = "Facial covering", 
+      "y" = "COVID-19 Reproduction number", 
+      "u" = "Non-observable variables",
+      "x" = "Population density",
+      "z" = "Political orientation"))
+ggdag(mrdag, use_labels = "label")
+```
+
+## Relevance assumption of our instrument 
+
+For an instrumental variable (an “instrument”) $z$ to be valid, it must satisfy the relevance assumption:
+
+$$
+Cov(z,I) ≠ 0
+$$
+Our chosen instrumental variable being political orientation $z$, expressed as the percentage of votes either for the Republican Party or Democratic Party at the 2020 US presidential election. Our instrument needs to have has a causal effect on whether the population in a given state systematically wears a mask or not. Indeed, former Republican POTUS Trump  when the the pandemic started played down the effectiveness of masks and advocated to the population to not wear one and even refused to be photographed with one on. 
+
+```{r, echo = TRUE, eval = TRUE}
+summary(lm(facial_covering ~ dem_percent, policy))
+```
+
+Increasing the percentage of votes for the Democrat Party in the 2020 presidential election by 1% in a state is associated, on average, with a 0.75 percentage point change increase in the systematic wear of masks in the said state. The $R^2$ we get is quite big (0.72), indicating that political orientation does indeed explain facial covering,supporting the fact that our instrument $$d$$, facial covering, is in fact endogenous. 
+
+```{r, echo = TRUE, eval = TRUE}
+ggplot(policy,
+aes(y = facial_covering, x = dem_percent)) + 
+geom_text(aes(label = state),size=3) + 
+xlab("dem_percent")+
+ylab("mask") + 
+theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + 
+geom_smooth(method = "lm") +
+ggtitle("Relationship between the blue votes at the US Presidential Election 2020 and the systematic wear of masks by state ")
+```
+
+```{r, echo = TRUE, eval = TRUE}
+summary(lm(facial_covering ~ rep_percent, policy))
+```
+
+Similarly, increasing the percentage of votes for the Republican Party in the 2020 presidential election by 1% in a state is associated, on average, with a -0.75 percentage point change increase in the systematic wear of masks in the said state.
+
+```{r, echo = TRUE, eval = TRUE}
+ggplot(policy,
+aes(y = facial_covering, x = rep_percent)) + 
+geom_text(aes(label = state),size=3) + 
+xlab("rep_percent")+
+ylab("mask") + 
+theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + 
+geom_smooth(method = "lm") +
+ggtitle("Relationship between the red votes at the US Presidential Election 2020 and the systematic wear of masks by state ")
+```
+
+## Exclusion restriction of our instrument 
+
+For an instrumental variable (an “instrument”) $z$ to be valid, it must satisfy the exclusion restriction :
+$$
+Cov(z,u) = 0
+$$
+
+Political orientation has no effect on the COVID-19 reproduction number other than through its effect on facial covering.
+
+We can conclude that our instrument variable $$z$$ is a valid. We can now proceed to realize the Two Stages Least Squares 
+
+## First stage of the Two-Stage Least Square approach
+ 
+We regress our treatment variable $$d$$ on our control variable $$x$$ and our instrument variable $$z$$, and save the fitted value that we obtain for $$d$$ as d.hat
+
+```{r, echo = TRUE, eval = TRUE}
+tsls1<-lm(facial_covering~population_density+dem_percent, data = policy)
+
+summary(tsls1)
+```
+
+```{r, echo = TRUE, eval = TRUE}
+d.hat<-fitted.values(tsls1)
+```
+
+## Second stage of the Two-Stage Least Square approach
+
+We regress $$y$$ our explained variable on $$x$$ our control variable and $$d.hat$$ the fitted value of $$d$$ our treatment variable.
+
+```{r, echo = TRUE, eval = TRUE}
+tsls2<-lm(covid_reproduction_number~population_density+d.hat, data = policy )
+
+summary(tsls2)
+```
+
+With the OLS approach we found an estimated coefficient of $$d$$ our treatment variable of -0.21173365 whereas with the 2SLS approach we found an estimated coefficient of $$d$$ of -0.19511470. Indeed using the OLS approach resulted in biased estimates for the true effect of \beta_1 because of omitted variable bias.
+
+
+
+### B. Panel Data Estimation with the fixed effects estimator and fixest package
+
+Now let us see the variation in the data.
+
+```{r,echo = TRUE, eval=TRUE}
+
+govCovid = lm(ConfirmedDeaths ~ StringencyIndex, govDataMonthly)
+coef(govCovid)[2]
+
+```
+This regression shows us that increasing the stringency factor by 1 unit (i.e. 100 percentage points), increases the amount of confirmed COVID deaths by 61.2. In other words, countries with more stringent containment measures also have more COVID deaths. 
+
+
+```{r,echo = TRUE, eval=TRUE}
+ggplot(govDataMonthly,
+       aes(x = StringencyIndex, 
+           y = ConfirmedDeaths)) + 
+  geom_point() + 
+  geom_smooth(method="lm",
+              se=FALSE) + 
+  theme_bw() +
+  labs(x = 'StringencyIndex', 
+       y = 'ConfirmedDeaths')
+```
+
+
+This brings up the question, is more stringent measures the result of more covid deaths? This is the simultaneous equation model situation. 
+
+In this panel data context let us look at within and between variation. Within variation in this case is confirmed deaths, because it changes within each country over time. 
+Between variation in this case would encompass factors that differ only across or between countries. 
+
+Several theorized factors seen in previous research include culture of mask wearing (seen in countries like Taiwan), government style, country wealth...etc.
+
+Given the vast possibilities for unobserved heterogeneous factors, we have used the single fixed effect of within each country. 
+
+
+```{r,echo = TRUE, eval=TRUE}
+govCovid$ols = feols(log(ConfirmedDeaths) ~ log(StringencyIndex) | CountryName, govDataMonthly)
+etable(govCovid$ols, cluster = "CountryName")
+```
+
+Here we get a coefficient of -1.64, using the log-transformed variables. This reflects the intuitive result that more stringent containment measures such as school and work closures, stay-at-home orders and mobility restrictions, cause a decrease in COVID deaths! 
+
+
+## IV. Conclusion
+- Clearly summarizes main results and limitations of the analysis (1 point)
+
+## References
+
+Deb, P, D Furceri, J D Ostry, and N Tawk (2020), “The effect of containment measures on the COVID-19 pandemic”, VoxEU.org, 5 June.
+
+Hartl, T, K Wälde and E Weber (2020), “Measuring the impact of the German public shutdown on the spread of COVID-19”, VoxEU.org, 14 April.
+
+Mitze, T, R Kosfeld, J Rode and K Wälde (2020), “Face masks considerably reduce COVID-19 cases in Germany: A synthetic control method approach”, COVID Economics: Vetted and Real-Time Papers 27: 74–103.
+
+Prather, K A, C C Wang, and R T Schooley (2020), “Reducing Transmission of SARS-CoV-2”, Science, 27 May.
